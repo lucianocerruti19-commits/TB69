@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cliente</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="header">
+  <img src="logo.png">
+  <div class="title">Menú</div>
+</div>
+
+<div class="gold-line"></div>
+
+<div class="container">
+
+  <div id="secciones"></div>
+
+  <div class="card">
+    <h3>Carrito</h3>
+    <div id="carritoLista"></div>
+    <h4>Total: $<span id="total">0</span></h4>
+    <input type="number" id="mesa" placeholder="Número de mesa">
+    <button onclick="enviarPedido()">Enviar Pedido</button>
+  </div>
+
+</div>
+
+<script type="module">
+import { db } from "./firebase.js";
+import {
+  collection,
+  getDocs,
+  addDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+let carrito = [];
+let total = 0;
+
+const seccionesRef = collection(db,"secciones");
+const productosRef = collection(db,"productos");
+
+async function cargarMenu(){
+  const seccionesSnap = await getDocs(seccionesRef);
+  const productosSnap = await getDocs(productosRef);
+
+  const contenedor = document.getElementById("secciones");
+  contenedor.innerHTML="";
+
+  const productos = [];
+  productosSnap.forEach(doc=>productos.push({id:doc.id,...doc.data()}));
+
+  seccionesSnap.forEach(sec=>{
+    const secData = sec.data();
+
+    const card = document.createElement("div");
+    card.className="card";
+
+    card.innerHTML=`<h3>${secData.nombre}</h3>`;
+
+    productos
+      .filter(p=>p.seccionId===sec.id)
+      .forEach(prod=>{
+        card.innerHTML+=`
+          <div style="display:flex;justify-content:space-between;align-items:center;margin:8px 0;">
+            <span>${prod.nombre} - $${prod.precio}</span>
+            <button onclick="agregar('${prod.nombre}',${prod.precio})">Agregar</button>
+          </div>
+        `;
+      });
+
+    contenedor.appendChild(card);
+  });
+}
+
+window.agregar = function(nombre,precio){
+  carrito.push({nombre,precio});
+  total += precio;
+
+  document.getElementById("carritoLista").innerHTML =
+    carrito.map(i=>`${i.nombre} - $${i.precio}`).join("<br>");
+
+  document.getElementById("total").innerText = total;
+};
+
+window.enviarPedido = async function(){
+  const mesa = document.getElementById("mesa").value;
+  if(!mesa || carrito.length===0){
+    alert("Completar datos");
+    return;
+  }
+
+  await addDoc(collection(db,"pedidos"),{
+    mesa,
+    items: carrito,
+    total,
+    estado:"pendiente",
+    fecha: serverTimestamp(),
+    cerradoEn: null
+  });
+
+  carrito=[];
+  total=0;
+  document.getElementById("carritoLista").innerHTML="";
+  document.getElementById("total").innerText="0";
+  document.getElementById("mesa").value="";
+
+  alert("Pedido enviado a cocina");
+};
+
+cargarMenu();
+</script>
+
+</body>
+</html>

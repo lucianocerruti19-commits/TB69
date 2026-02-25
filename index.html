@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tutto per Tutti</title>
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+</head>
+
+<body>
+
+<div class="header">
+  <img src="logo.png">
+  <div class="title">Sistema Interno</div>
+</div>
+
+<div class="gold-line"></div>
+
+<div class="container">
+
+  <div class="card">
+    <h3>Cliente</h3>
+    <button onclick="entrar('cliente.html')">Ingresar</button>
+  </div>
+
+  <div class="card">
+    <h3>Cocina</h3>
+    <input type="password" id="claveCocina" placeholder="Clave Cocina">
+    <button onclick="validar('cocina.html','claveCocina','cocina123')">Ingresar</button>
+  </div>
+
+  <div class="card">
+    <h3>Mozo</h3>
+    <input type="password" id="claveMozo" placeholder="Clave Mozo">
+    <button onclick="validar('mozo.html','claveMozo','mozo123')">Ingresar</button>
+  </div>
+
+  <div class="card">
+    <h3>Administrador</h3>
+    <input type="password" id="claveAdmin" placeholder="Clave Admin">
+    <button onclick="validar('admin.html','claveAdmin','admin123')">Ingresar</button>
+  </div>
+
+  <div class="card">
+    <h3>Dueño</h3>
+    <input type="password" id="claveDueno" placeholder="Clave Dueño">
+    <button onclick="validar('dueno.html','claveDueno','dueno123')">Ingresar</button>
+  </div>
+
+</div>
+
+<script>
+function entrar(pagina){
+  window.location.href = pagina;
+}
+
+function validar(pagina,inputId,claveCorrecta){
+  const valor = document.getElementById(inputId).value;
+  if(valor === claveCorrecta){
+    window.location.href = pagina;
+  } else {
+    alert("Clave incorrecta");
+  }
+}
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+</script>
+
+</body>
+</html>

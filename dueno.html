@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dueño</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="header">
+  <img src="logo.png">
+  <div class="title">Panel del Dueño</div>
+</div>
+
+<div class="gold-line"></div>
+
+<div class="container">
+
+  <div class="card">
+    <h3>Filtrar por fecha</h3>
+    <input type="date" id="fechaFiltro">
+    <button onclick="filtrar()">Filtrar</button>
+    <button onclick="cargarPedidos()">Ver Todo</button>
+  </div>
+
+  <div class="card">
+    <h3>Total General: $<span id="totalGeneral">0</span></h3>
+    <button class="export-btn" onclick="exportar()">Exportar a Excel</button>
+  </div>
+
+  <div class="card">
+    <h3>Historial</h3>
+    <div id="historial"></div>
+  </div>
+
+</div>
+
+<script type="module">
+import { db } from "./firebase.js";
+import {
+  collection,
+  query,
+  where,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+let pedidosGlobal = [];
+
+async function cargarPedidos(){
+  const pedidosRef = collection(db,"pedidos");
+  const q = query(pedidosRef, where("estado","==","cobrado"));
+  const snapshot = await getDocs(q);
+
+  pedidosGlobal = [];
+  snapshot.forEach(doc=>pedidosGlobal.push(doc.data()));
+
+  mostrar(pedidosGlobal);
+}
+
+function mostrar(lista){
+  const contenedor = document.getElementById("historial");
+  contenedor.innerHTML="";
+  let total = 0;
+
+  lista.forEach(p=>{
+    total += p.total;
+
+    contenedor.innerHTML += `
+      <div style="margin-bottom:15px;border-bottom:1px solid #333;padding-bottom:10px;">
+        <strong>Mesa ${p.mesa}</strong><br>
+        ${p.items.map(i=>`${i.nombre} - $${i.precio}`).join("<br>")}
+        <br><strong>Total: $${p.total}</strong>
+      </div>
+    `;
+  });
+
+  document.getElementById("totalGeneral").innerText = total;
+}
+
+window.filtrar = function(){
+  const fecha = document.getElementById("fechaFiltro").value;
+  if(!fecha) return;
+
+  const filtrados = pedidosGlobal.filter(p=>{
+    if(!p.cerradoEn) return false;
+    const d = p.cerradoEn.toDate().toISOString().split("T")[0];
+    return d === fecha;
+  });
+
+  mostrar(filtrados);
+};
+
+window.exportar = function(){
+  let csv = "Mesa,Producto,Precio,Total\n";
+
+  pedidosGlobal.forEach(p=>{
+    p.items.forEach(i=>{
+      csv += `${p.mesa},${i.nombre},${i.precio},${p.total}\n`;
+    });
+  });
+
+  const blob = new Blob([csv],{type:"text/csv"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "ventas_tutto.csv";
+  a.click();
+};
+
+cargarPedidos();
+</script>
+
+</body>
+</html>

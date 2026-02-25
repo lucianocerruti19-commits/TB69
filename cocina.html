@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cocina</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="header">
+  <img src="logo.png">
+  <div class="title">Cocina</div>
+</div>
+
+<div class="gold-line"></div>
+
+<div class="container">
+  <div id="pedidos"></div>
+</div>
+
+<script type="module">
+import { db } from "./firebase.js";
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  updateDoc,
+  doc
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+const pedidosRef = collection(db,"pedidos");
+const q = query(pedidosRef, where("estado","==","pendiente"));
+
+onSnapshot(q, snapshot=>{
+  const contenedor = document.getElementById("pedidos");
+  contenedor.innerHTML="";
+
+  snapshot.forEach(docSnap=>{
+    const data = docSnap.data();
+
+    const card = document.createElement("div");
+    card.className="card";
+
+    card.innerHTML=`
+      <h3>Mesa ${data.mesa}</h3>
+      ${data.items.map(i=>`${i.nombre} - $${i.precio}`).join("<br>")}
+      <h4>Total: $${data.total}</h4>
+      <button onclick="marcarListo('${docSnap.id}')">Marcar como listo</button>
+    `;
+
+    contenedor.appendChild(card);
+  });
+});
+
+window.marcarListo = async function(id){
+  await updateDoc(doc(db,"pedidos",id),{
+    estado:"listo"
+  });
+};
+</script>
+
+</body>
+</html>

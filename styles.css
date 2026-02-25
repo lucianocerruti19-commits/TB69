@@ -1,0 +1,81 @@
+/* ===== TUTTO PER TUTTI - PREMIUM GOLD THEME ===== */
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #0a0a0a;
+  color: #ffd700;
+}
+
+.header {
+  text-align: center;
+  padding: 30px 10px 10px;
+}
+
+.header img {
+  width: 180px;
+}
+
+.title {
+  font-size: 26px;
+  margin-top: 10px;
+  letter-spacing: 1px;
+}
+
+.gold-line {
+  height: 3px;
+  background: linear-gradient(90deg,#b8860b,#ffd700,#b8860b);
+  margin: 20px 0;
+}
+
+.container {
+  padding: 20px;
+}
+
+.card {
+  background: #111;
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 12px rgba(255,215,0,0.15);
+}
+
+button {
+  background: linear-gradient(145deg,#b8860b,#ffd700,#b8860b);
+  border: none;
+  padding: 14px 22px;
+  border-radius: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #000;
+  margin: 8px 0;
+  box-shadow: 0 0 10px rgba(255,215,0,0.3);
+  transition: 0.2s;
+}
+
+button:hover {
+  transform: scale(1.03);
+}
+
+input, select {
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  margin: 8px 0;
+  width: 100%;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th, .table td {
+  padding: 10px;
+  border-bottom: 1px solid #333;
+  text-align: left;
+}
+
+.export-btn {
+  background: linear-gradient(145deg,#8b6508,#ffd700);
+}

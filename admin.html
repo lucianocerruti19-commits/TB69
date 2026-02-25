@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administrador</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="header">
+  <img src="logo.png">
+  <div class="title">Administrador</div>
+</div>
+
+<div class="gold-line"></div>
+
+<div class="container">
+
+  <div class="card">
+    <h3>Crear Sección</h3>
+    <input type="text" id="nuevaSeccion" placeholder="Nombre sección">
+    <button onclick="crearSeccion()">Crear</button>
+  </div>
+
+  <div class="card">
+    <h3>Crear Producto</h3>
+    <input type="text" id="nombreProducto" placeholder="Nombre producto">
+    <input type="number" id="precioProducto" placeholder="Precio">
+    <select id="selectSeccion"></select>
+    <button onclick="crearProducto()">Crear</button>
+  </div>
+
+  <div class="card">
+    <h3>Secciones</h3>
+    <div id="listaSecciones"></div>
+  </div>
+
+  <div class="card">
+    <h3>Productos</h3>
+    <div id="listaProductos"></div>
+  </div>
+
+</div>
+
+<script type="module">
+import { db } from "./firebase.js";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+const seccionesRef = collection(db,"secciones");
+const productosRef = collection(db,"productos");
+
+async function cargarSecciones(){
+  const snapshot = await getDocs(seccionesRef);
+  const select = document.getElementById("selectSeccion");
+  const lista = document.getElementById("listaSecciones");
+
+  select.innerHTML="";
+  lista.innerHTML="";
+
+  snapshot.forEach(docSnap=>{
+    const data = docSnap.data();
+
+    select.innerHTML += `<option value="${docSnap.id}">${data.nombre}</option>`;
+
+    lista.innerHTML += `
+      <div>
+        ${data.nombre}
+        <button onclick="eliminarSeccion('${docSnap.id}')">Eliminar</button>
+      </div>
+    `;
+  });
+}
+
+async function cargarProductos(){
+  const snapshot = await getDocs(productosRef);
+  const lista = document.getElementById("listaProductos");
+  lista.innerHTML="";
+
+  snapshot.forEach(docSnap=>{
+    const data = docSnap.data();
+
+    lista.innerHTML += `
+      <div>
+        ${data.nombre} - $${data.precio}
+        <button onclick="editarPrecio('${docSnap.id}',${data.precio})">Editar</button>
+        <button onclick="eliminarProducto('${docSnap.id}')">Eliminar</button>
+      </div>
+    `;
+  });
+}
+
+window.crearSeccion = async function(){
+  const nombre = document.getElementById("nuevaSeccion").value;
+  if(!nombre) return;
+
+  await addDoc(seccionesRef,{ nombre });
+  document.getElementById("nuevaSeccion").value="";
+  cargarSecciones();
+};
+
+window.crearProducto = async function(){
+  const nombre = document.getElementById("nombreProducto").value;
+  const precio = parseFloat(document.getElementById("precioProducto").value);
+  const seccionId = document.getElementById("selectSeccion").value;
+
+  if(!nombre || !precio) return;
+
+  await addDoc(productosRef,{ nombre, precio, seccionId });
+  document.getElementById("nombreProducto").value="";
+  document.getElementById("precioProducto").value="";
+  cargarProductos();
+};
+
+window.eliminarSeccion = async function(id){
+  await deleteDoc(doc(db,"secciones",id));
+  cargarSecciones();
+};
+
+window.eliminarProducto = async function(id){
+  await deleteDoc(doc(db,"productos",id));
+  cargarProductos();
+};
+
+window.editarPrecio = async function(id,precioActual){
+  const nuevo = prompt("Nuevo precio:",precioActual);
+  if(!nuevo) return;
+  await updateDoc(doc(db,"productos",id),{ precio: parseFloat(nuevo) });
+  cargarProductos();
+};
+
+cargarSecciones();
+cargarProductos();
+</script>
+
+</body>
+</html>
